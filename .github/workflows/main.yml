@@ -134,10 +134,7 @@ jobs:
       run: php artisan migrate --force --seed
 
     - name: Clear application cache
-      run: |
-        php artisan config:clear
-        php artisan cache:clear
-        php artisan view:clear
+      run: php artisan optimize:clear
 
     - name: Run Pest tests
       run: vendor/bin/pest --coverage --coverage-text --coverage-clover=coverage.xml --coverage-html=coverage --stop-on-failure
