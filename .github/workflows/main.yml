@@ -92,16 +92,6 @@ jobs:
     runs-on: ubuntu-latest
     name: Run Tests
     needs: code-quality
-    
-    strategy:
-      fail-fast: false
-      matrix:
-        php: [8.4]
-        laravel: [12.*]
-        stability: [prefer-stable]
-        include:
-          - laravel: 12.*
-            testbench: 10.*
 
     steps:
     - name: Checkout code
@@ -110,7 +100,7 @@ jobs:
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: ${{ matrix.php }}
+        php-version: '8.4'
         extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, fileinfo
         coverage: xdebug
 
@@ -123,14 +113,12 @@ jobs:
       uses: actions/cache@v4
       with:
         path: vendor
-        key: composer-${{ runner.os }}-${{ matrix.php }}-${{ hashFiles('composer.lock') }}
+        key: composer-${{ runner.os }}-8.4-${{ hashFiles('composer.lock') }}
         restore-keys: |
-          composer-${{ runner.os }}-${{ matrix.php }}-
+          composer-${{ runner.os }}-8.4-
 
     - name: Install Composer dependencies
-      run: |
-        composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
-        composer update --${{ matrix.stability }} --prefer-dist --no-interaction
+      run: composer install --no-progress --prefer-dist --optimize-autoloader
 
     - name: Create environment file and generate key
       run: |
@@ -155,7 +143,7 @@ jobs:
       run: vendor/bin/pest --coverage --coverage-text --coverage-clover=coverage.xml --coverage-html=coverage --stop-on-failure
 
     - name: Upload coverage to Codecov
-      if: matrix.php == '8.4' && matrix.laravel == '12.*'
+      if: matrix.php == '8.4' && matrix.laravel == '12.x'
       uses: codecov/codecov-action@v3
       with:
         file: ./coverage.xml
@@ -167,7 +155,7 @@ jobs:
       uses: actions/upload-artifact@v4
       if: failure()
       with:
-        name: test-results-${{ matrix.php }}-${{ matrix.laravel }}
+        name: test-results-php84-laravel12
         path: |
           tests/
           storage/logs/
@@ -175,7 +163,6 @@ jobs:
 
     - name: Upload coverage report
       uses: actions/upload-artifact@v4
-      if: matrix.php == '8.4' && matrix.laravel == '12.*'
       with:
         name: coverage-report
         path: coverage/
