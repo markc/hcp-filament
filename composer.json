@@ -1,24 +1,24 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "hcp-filament/hcp-filament",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
+    "description": "Modern Laravel + Filament implementation of HCP mail management system.",
+    "keywords": ["laravel", "filament", "mail", "postfix", "dovecot", "admin"],
     "license": "MIT",
     "require": {
         "php": "^8.2",
         "filament/filament": "^4.0",
-        "laravel/framework": "^12.0",
+        "laravel/framework": "^12.19.3",
         "laravel/tinker": "^2.10.1"
     },
     "require-dev": {
-        "fakerphp/faker": "^1.23",
-        "laravel/pail": "^1.2.2",
-        "laravel/pint": "^1.13",
-        "laravel/sail": "^1.41",
-        "mockery/mockery": "^1.6",
-        "nunomaduro/collision": "^8.6",
-        "pestphp/pest": "^3.8",
+        "fakerphp/faker": "^1.24.1",
+        "laravel/pail": "^1.2.3",
+        "laravel/pint": "^1.22.1",
+        "laravel/sail": "^1.43.1",
+        "mockery/mockery": "^1.6.12",
+        "nunomaduro/collision": "^8.8.1",
+        "pestphp/pest": "^3.8.2",
         "pestphp/pest-plugin-laravel": "^3.2"
     },
     "autoload": {
