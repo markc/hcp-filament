@@ -21,6 +21,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
+        'active',
     ];
 
     /**
@@ -43,6 +45,19 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'active' => 'boolean',
         ];
+    }
+
+    // Role constants
+    const ROLE_ADMIN = 'admin';
+
+    const ROLE_AGENT = 'agent';
+
+    const ROLE_CUSTOMER = 'customer';
+
+    public function canAccessPanel($panel): bool
+    {
+        return $this->active && in_array($this->role, [self::ROLE_ADMIN, self::ROLE_AGENT]);
     }
 }
