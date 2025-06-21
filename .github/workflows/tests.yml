@@ -54,6 +54,8 @@ jobs:
         cp .env.example .env
         echo "DB_CONNECTION=sqlite" >> .env
         echo "DB_DATABASE=:memory:" >> .env
+        ls -la .env
+        cat .env
 
     - name: Generate application key
       run: php artisan key:generate --ansi
@@ -123,6 +125,8 @@ jobs:
         cp .env.example .env
         echo "DB_CONNECTION=sqlite" >> .env
         echo "DB_DATABASE=database/database.sqlite" >> .env
+        ls -la .env
+        cat .env
 
     - name: Create SQLite database
       run: touch database/database.sqlite
