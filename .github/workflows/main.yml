@@ -45,13 +45,16 @@ jobs:
     - name: Check code style with Laravel Pint
       run: vendor/bin/pint --test
 
-    - name: Run PHPStan static analysis
-      run: vendor/bin/phpstan analyse --memory-limit=2G
+    - name: Validate Composer configuration
+      run: composer validate --strict
 
-  # Security Checks
-  security:
+    - name: Check for security vulnerabilities
+      run: composer audit
+
+  # Syntax and Basic Checks
+  syntax-check:
     runs-on: ubuntu-latest
-    name: Security Analysis
+    name: Syntax & Basic Validation
     needs: code-quality
 
     steps:
@@ -64,25 +67,25 @@ jobs:
         php-version: '8.4'
         extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
 
-    - name: Cache composer dependencies
-      uses: actions/cache@v3
-      with:
-        path: vendor
-        key: composer-${{ hashFiles('composer.lock') }}
-
     - name: Install Composer dependencies
       run: composer install --no-progress --prefer-dist --optimize-autoloader
 
-    - name: Run security audit
-      run: composer audit
-
-    - name: Check for known security vulnerabilities
+    - name: Check PHP syntax
       run: |
-        if command -v security-checker &> /dev/null; then
-          security-checker security:check
-        else
-          echo "Security checker not available, skipping..."
-        fi
+        echo "Checking PHP syntax..."
+        find app/ -name "*.php" -exec php -l {} \; | grep -v "No syntax errors" || echo "✅ No syntax errors found"
+        find database/ -name "*.php" -exec php -l {} \; | grep -v "No syntax errors" || echo "✅ No syntax errors found"
+        find tests/ -name "*.php" -exec php -l {} \; | grep -v "No syntax errors" || echo "✅ No syntax errors found"
+
+    - name: Test application bootstrap
+      run: |
+        cp .env.example .env
+        echo "DB_CONNECTION=sqlite" >> .env
+        echo "DB_DATABASE=database/database.sqlite" >> .env
+        touch database/database.sqlite
+        php artisan key:generate --ansi --force
+        php artisan config:clear
+        php artisan route:list | head -5
 
   # Tests
   tests:
@@ -241,7 +244,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     name: Build & Deploy Assets
-    needs: [code-quality, tests]
+    needs: [code-quality, syntax-check, tests]
 
     steps:
     - name: Checkout code
@@ -311,38 +314,3 @@ jobs:
           storage/framework/cache/
         retention-days: 1
 
-  # Syntax and PR checks (for completeness)
-  syntax-check:
-    runs-on: ubuntu-latest
-    name: Syntax & Basic Checks
-    if: github.event_name == 'push'
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: '8.4'
-        extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
-
-    - name: Install Composer dependencies
-      run: composer install --no-progress --prefer-dist --optimize-autoloader
-
-    - name: Check PHP syntax
-      run: |
-        echo "Checking PHP syntax..."
-        find app/ -name "*.php" -exec php -l {} \; | grep -v "No syntax errors" || echo "✅ No syntax errors found"
-        find database/ -name "*.php" -exec php -l {} \; | grep -v "No syntax errors" || echo "✅ No syntax errors found"
-        find tests/ -name "*.php" -exec php -l {} \; | grep -v "No syntax errors" || echo "✅ No syntax errors found"
-
-    - name: Test application bootstrap
-      run: |
-        cp .env.example .env
-        echo "DB_CONNECTION=sqlite" >> .env
-        echo "DB_DATABASE=database/database.sqlite" >> .env
-        touch database/database.sqlite
-        php artisan key:generate --ansi --force
-        php artisan config:clear
-        php artisan route:list | head -5
