@@ -143,7 +143,6 @@ jobs:
       run: vendor/bin/pest --coverage --coverage-text --coverage-clover=coverage.xml --coverage-html=coverage --stop-on-failure
 
     - name: Upload coverage to Codecov
-      if: matrix.php == '8.4' && matrix.laravel == '12.x'
       uses: codecov/codecov-action@v3
       with:
         file: ./coverage.xml
