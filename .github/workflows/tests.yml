@@ -49,16 +49,20 @@ jobs:
         composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
         composer update --${{ matrix.stability }} --prefer-dist --no-interaction
 
-    - name: Create environment file
+    - name: Create environment file and generate key
       run: |
+        echo "Checking if .env.example exists..."
+        ls -la .env.example
+        echo "Copying .env.example to .env..."
         cp .env.example .env
         echo "DB_CONNECTION=sqlite" >> .env
         echo "DB_DATABASE=:memory:" >> .env
+        echo "Verifying .env file was created..."
         ls -la .env
+        echo "Contents of .env file:"
         cat .env
-
-    - name: Generate application key
-      run: php artisan key:generate --ansi
+        echo "Generating application key..."
+        php artisan key:generate --ansi --force
 
     - name: Create SQLite database file
       run: touch database/database.sqlite
@@ -120,19 +124,23 @@ jobs:
     - name: Install Composer dependencies
       run: composer install --no-progress --prefer-dist --optimize-autoloader
 
-    - name: Create environment file
+    - name: Create environment file and generate key
       run: |
+        echo "Checking if .env.example exists..."
+        ls -la .env.example
+        echo "Copying .env.example to .env..."
         cp .env.example .env
         echo "DB_CONNECTION=sqlite" >> .env
         echo "DB_DATABASE=database/database.sqlite" >> .env
+        echo "Verifying .env file was created..."
         ls -la .env
+        echo "Contents of .env file:"
         cat .env
+        echo "Generating application key..."
+        php artisan key:generate --ansi --force
 
     - name: Create SQLite database
       run: touch database/database.sqlite
-
-    - name: Generate application key
-      run: php artisan key:generate --ansi
 
     - name: Run database migrations
       run: php artisan migrate --force
