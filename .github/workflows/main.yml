@@ -37,6 +37,9 @@ jobs:
         cp .env.example .env
         echo "DB_CONNECTION=sqlite" >> .env
         echo "DB_DATABASE=database/database.sqlite" >> .env
+        echo "CACHE_STORE=file" >> .env
+        echo "SESSION_DRIVER=file" >> .env
+        echo "QUEUE_CONNECTION=sync" >> .env
         php artisan key:generate --ansi --force
 
     - name: Create SQLite database
@@ -82,6 +85,9 @@ jobs:
         cp .env.example .env
         echo "DB_CONNECTION=sqlite" >> .env
         echo "DB_DATABASE=database/database.sqlite" >> .env
+        echo "CACHE_STORE=file" >> .env
+        echo "SESSION_DRIVER=file" >> .env
+        echo "QUEUE_CONNECTION=sync" >> .env
         touch database/database.sqlite
         php artisan key:generate --ansi --force
         php artisan config:clear
@@ -125,6 +131,9 @@ jobs:
         cp .env.example .env
         echo "DB_CONNECTION=sqlite" >> .env
         echo "DB_DATABASE=:memory:" >> .env
+        echo "CACHE_STORE=file" >> .env
+        echo "SESSION_DRIVER=file" >> .env
+        echo "QUEUE_CONNECTION=sync" >> .env
         php artisan key:generate --ansi --force
 
     - name: Create SQLite database file
@@ -188,6 +197,9 @@ jobs:
         cp .env.example .env
         echo "DB_CONNECTION=sqlite" >> .env
         echo "DB_DATABASE=database/database.sqlite" >> .env
+        echo "CACHE_STORE=file" >> .env
+        echo "SESSION_DRIVER=file" >> .env
+        echo "QUEUE_CONNECTION=sync" >> .env
         php artisan key:generate --ansi --force
 
     - name: Create SQLite database
@@ -265,6 +277,9 @@ jobs:
         cp .env.example .env
         echo "DB_CONNECTION=sqlite" >> .env
         echo "DB_DATABASE=database/database.sqlite" >> .env
+        echo "CACHE_STORE=file" >> .env
+        echo "SESSION_DRIVER=file" >> .env
+        echo "QUEUE_CONNECTION=sync" >> .env
         php artisan key:generate --ansi --force
 
     - name: Create SQLite database
