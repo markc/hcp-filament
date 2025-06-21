@@ -28,8 +28,7 @@ class VhostResource extends Resource
                     ->required()
                     ->maxLength(255)
                     ->unique(ignoreRecord: true),
-                \Filament\Forms\Components\Toggle::make('status')
-                    ->label('Active')
+                \Filament\Forms\Components\Toggle::make('active')
                     ->default(true),
             ]);
     }
@@ -38,28 +37,69 @@ class VhostResource extends Resource
     {
         return $table
             ->columns([
-                \Filament\Tables\Columns\TextColumn::make('domain')
+                \Filament\Tables\Columns\TextInputColumn::make('domain')
                     ->searchable()
-                    ->sortable(),
-                \Filament\Tables\Columns\ToggleColumn::make('status')
-                    ->label('Active'),
+                    ->sortable()
+                    ->toggleable()
+                    ->extraInputAttributes(['style' => 'border: none !important; outline: none !important; box-shadow: none !important; background: transparent !important;']),
+                \Filament\Tables\Columns\ToggleColumn::make('active')
+                    ->sortable()
+                    ->toggleable(),
                 \Filament\Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+                \Filament\Tables\Columns\TextColumn::make('updated_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->defaultSort('updated_at', 'desc')
+            ->reorderableColumns()
+            ->deferColumnManager(false)
+            ->recordAction(false)
             ->filters([
-                \Filament\Tables\Filters\TernaryFilter::make('status')
-                    ->label('Active'),
+                \Filament\Tables\Filters\TernaryFilter::make('active'),
+                \Filament\Tables\Filters\Filter::make('domain')
+                    ->form([
+                        \Filament\Forms\Components\TextInput::make('domain')
+                            ->placeholder('Search domain...'),
+                    ])
+                    ->query(function (\Illuminate\Database\Eloquent\Builder $query, array $data): \Illuminate\Database\Eloquent\Builder {
+                        return $query
+                            ->when(
+                                $data['domain'],
+                                fn (\Illuminate\Database\Eloquent\Builder $query, $domain): \Illuminate\Database\Eloquent\Builder => $query->where('domain', 'like', '%'.$domain.'%'),
+                            );
+                    }),
+                \Filament\Tables\Filters\Filter::make('created_at')
+                    ->form([
+                        \Filament\Forms\Components\DatePicker::make('created_from'),
+                        \Filament\Forms\Components\DatePicker::make('created_until'),
+                    ])
+                    ->query(function (\Illuminate\Database\Eloquent\Builder $query, array $data): \Illuminate\Database\Eloquent\Builder {
+                        return $query
+                            ->when(
+                                $data['created_from'],
+                                fn (\Illuminate\Database\Eloquent\Builder $query, $date): \Illuminate\Database\Eloquent\Builder => $query->whereDate('created_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['created_until'],
+                                fn (\Illuminate\Database\Eloquent\Builder $query, $date): \Illuminate\Database\Eloquent\Builder => $query->whereDate('created_at', '<=', $date),
+                            );
+                    }),
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
+                EditAction::make()->label(''),
+                DeleteAction::make()->label(''),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
+            ])
+            ->headerActions([
+                \Filament\Actions\CreateAction::make(),
             ]);
     }
 
@@ -74,8 +114,6 @@ class VhostResource extends Resource
     {
         return [
             'index' => \App\Filament\Admin\Resources\VhostResource\Pages\ListVhosts::route('/'),
-            'create' => \App\Filament\Admin\Resources\VhostResource\Pages\CreateVhost::route('/create'),
-            'edit' => \App\Filament\Admin\Resources\VhostResource\Pages\EditVhost::route('/{record}/edit'),
         ];
     }
 }
