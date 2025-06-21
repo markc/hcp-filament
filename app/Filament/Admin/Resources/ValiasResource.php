@@ -45,42 +45,76 @@ class ValiasResource extends Resource
     {
         return $table
             ->columns([
-                \Filament\Tables\Columns\TextColumn::make('source')
+                \Filament\Tables\Columns\TextInputColumn::make('source')
                     ->label('Alias')
                     ->searchable()
-                    ->sortable(),
-                \Filament\Tables\Columns\TextColumn::make('target')
+                    ->sortable()
+                    ->toggleable()
+                    ->extraInputAttributes(['style' => 'border: none !important; outline: none !important; box-shadow: none !important; background: transparent !important;']),
+                \Filament\Tables\Columns\TextInputColumn::make('target')
                     ->label('Target(s)')
-                    ->limit(50)
-                    ->searchable(),
-                \Filament\Tables\Columns\TextColumn::make('domain')
-                    ->label('Domain')
-                    ->getStateUsing(fn ($record) => $record->getDomainAttribute())
-                    ->sortable(),
-                \Filament\Tables\Columns\IconColumn::make('is_catchall')
-                    ->label('Catchall')
-                    ->boolean()
-                    ->getStateUsing(fn ($record) => str_starts_with($record->source, '@')),
-                \Filament\Tables\Columns\ToggleColumn::make('active'),
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable()
+                    ->extraInputAttributes(['style' => 'border: none !important; outline: none !important; box-shadow: none !important; background: transparent !important;']),
+                \Filament\Tables\Columns\ToggleColumn::make('active')
+                    ->sortable()
+                    ->toggleable(),
                 \Filament\Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+                \Filament\Tables\Columns\TextColumn::make('updated_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->defaultSort('updated_at', 'desc')
+            ->reorderableColumns()
+            ->deferColumnManager(false)
+            ->recordAction(false)
             ->filters([
                 \Filament\Tables\Filters\TernaryFilter::make('active'),
-                \Filament\Tables\Filters\Filter::make('catchall')
-                    ->label('Catchall Only')
-                    ->query(fn ($query) => $query->where('source', 'like', '@%')),
+                \Filament\Tables\Filters\Filter::make('target')
+                    ->form([
+                        \Filament\Forms\Components\TextInput::make('target_email')
+                            ->placeholder('Filter by target email...'),
+                    ])
+                    ->query(function (\Illuminate\Database\Eloquent\Builder $query, array $data): \Illuminate\Database\Eloquent\Builder {
+                        return $query
+                            ->when(
+                                $data['target_email'],
+                                fn (\Illuminate\Database\Eloquent\Builder $query, $email): \Illuminate\Database\Eloquent\Builder => $query->where('target', 'like', '%'.$email.'%'),
+                            );
+                    }),
+                \Filament\Tables\Filters\Filter::make('created_at')
+                    ->form([
+                        \Filament\Forms\Components\DatePicker::make('created_from'),
+                        \Filament\Forms\Components\DatePicker::make('created_until'),
+                    ])
+                    ->query(function (\Illuminate\Database\Eloquent\Builder $query, array $data): \Illuminate\Database\Eloquent\Builder {
+                        return $query
+                            ->when(
+                                $data['created_from'],
+                                fn (\Illuminate\Database\Eloquent\Builder $query, $date): \Illuminate\Database\Eloquent\Builder => $query->whereDate('created_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['created_until'],
+                                fn (\Illuminate\Database\Eloquent\Builder $query, $date): \Illuminate\Database\Eloquent\Builder => $query->whereDate('created_at', '<=', $date),
+                            );
+                    }),
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
+                EditAction::make()->label(''),
+                DeleteAction::make()->label(''),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
+            ])
+            ->headerActions([
+                \Filament\Actions\CreateAction::make(),
             ]);
     }
 
@@ -95,8 +129,6 @@ class ValiasResource extends Resource
     {
         return [
             'index' => \App\Filament\Admin\Resources\ValiasResource\Pages\ListValiases::route('/'),
-            'create' => \App\Filament\Admin\Resources\ValiasResource\Pages\CreateValias::route('/create'),
-            'edit' => \App\Filament\Admin\Resources\ValiasResource\Pages\EditValias::route('/{record}/edit'),
         ];
     }
 }

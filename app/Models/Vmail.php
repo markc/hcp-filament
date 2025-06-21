@@ -15,14 +15,17 @@ class Vmail extends Model
     protected $fillable = [
         'user',
         'password',
-        'quota',
+        'clearpw',
+        'uid',
+        'gid',
         'home',
         'active',
     ];
 
     protected $casts = [
         'active' => 'boolean',
-        'quota' => 'integer',
+        'uid' => 'integer',
+        'gid' => 'integer',
     ];
 
     protected $hidden = [
@@ -36,6 +39,15 @@ class Vmail extends Model
 
     public function setPasswordAttribute($value): void
     {
+        if ($value) {
+            $this->attributes['password'] = Hash::make($value);
+            $this->attributes['clearpw'] = $value;
+        }
+    }
+
+    public function setClearpwAttribute($value): void
+    {
+        $this->attributes['clearpw'] = $value;
         if ($value) {
             $this->attributes['password'] = Hash::make($value);
         }

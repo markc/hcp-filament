@@ -44,17 +44,36 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                \Filament\Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
-                \Filament\Tables\Columns\TextColumn::make('email')
-                    ->searchable(),
+                \Filament\Tables\Columns\TextInputColumn::make('name')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable()
+                    ->extraInputAttributes(['style' => 'border: none !important; outline: none !important; box-shadow: none !important; background: transparent !important;']),
+                \Filament\Tables\Columns\TextInputColumn::make('email')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable()
+                    ->extraInputAttributes(['style' => 'border: none !important; outline: none !important; box-shadow: none !important; background: transparent !important;']),
                 \Filament\Tables\Columns\TextColumn::make('role')
-                    ->badge(),
-                \Filament\Tables\Columns\ToggleColumn::make('active'),
+                    ->badge()
+                    ->sortable()
+                    ->toggleable(),
+                \Filament\Tables\Columns\ToggleColumn::make('active')
+                    ->sortable()
+                    ->toggleable(),
                 \Filament\Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                \Filament\Tables\Columns\TextColumn::make('updated_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->defaultSort('updated_at', 'desc')
+            ->reorderableColumns()
+            ->deferColumnManager(false)
+            ->recordAction(false)
             ->filters([
                 \Filament\Tables\Filters\SelectFilter::make('role')
                     ->options([
@@ -63,14 +82,34 @@ class UserResource extends Resource
                         'customer' => 'Customer',
                     ]),
                 \Filament\Tables\Filters\TernaryFilter::make('active'),
+                \Filament\Tables\Filters\Filter::make('created_at')
+                    ->form([
+                        \Filament\Forms\Components\DatePicker::make('created_from'),
+                        \Filament\Forms\Components\DatePicker::make('created_until'),
+                    ])
+                    ->query(function (\Illuminate\Database\Eloquent\Builder $query, array $data): \Illuminate\Database\Eloquent\Builder {
+                        return $query
+                            ->when(
+                                $data['created_from'],
+                                fn (\Illuminate\Database\Eloquent\Builder $query, $date): \Illuminate\Database\Eloquent\Builder => $query->whereDate('created_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['created_until'],
+                                fn (\Illuminate\Database\Eloquent\Builder $query, $date): \Illuminate\Database\Eloquent\Builder => $query->whereDate('created_at', '<=', $date),
+                            );
+                    }),
             ])
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()->label(''),
+                \Filament\Actions\DeleteAction::make()->label(''),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
+            ])
+            ->headerActions([
+                \Filament\Actions\CreateAction::make(),
             ]);
     }
 
@@ -85,8 +124,6 @@ class UserResource extends Resource
     {
         return [
             'index' => \App\Filament\Admin\Resources\UserResource\Pages\ListUsers::route('/'),
-            'create' => \App\Filament\Admin\Resources\UserResource\Pages\CreateUser::route('/create'),
-            'edit' => \App\Filament\Admin\Resources\UserResource\Pages\EditUser::route('/{record}/edit'),
         ];
     }
 }

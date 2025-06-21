@@ -24,19 +24,15 @@ class Valias extends Model
 
     public function vhost(): BelongsTo
     {
-        $domain = $this->getDomainAttribute();
+        $domain = '';
+        if (str_starts_with($this->source, '@')) {
+            $domain = substr($this->source, 1);
+        } else {
+            $domain = explode('@', $this->source)[1] ?? '';
+        }
 
         return $this->belongsTo(Vhost::class, 'domain', 'domain')
             ->where('domain', $domain);
-    }
-
-    public function getDomainAttribute(): string
-    {
-        if (str_starts_with($this->source, '@')) {
-            return substr($this->source, 1);
-        }
-
-        return explode('@', $this->source)[1] ?? '';
     }
 
     public function getIsCatchallAttribute(): bool

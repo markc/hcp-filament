@@ -17,7 +17,8 @@ class VhostFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'domain' => fake()->unique()->domainName(),
+            'active' => fake()->boolean(85), // 85% chance of being active
         ];
     }
 }

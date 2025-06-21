@@ -16,8 +16,16 @@ class VmailFactory extends Factory
      */
     public function definition(): array
     {
+        $password = fake()->password(8, 16);
+        $domain = fake()->domainName();
+        $username = fake()->userName();
+
         return [
-            //
+            'user' => $username.'@'.$domain,
+            'clearpw' => $password,
+            'uid' => fake()->numberBetween(1000, 9999),
+            'gid' => fake()->numberBetween(1000, 9999),
+            'active' => fake()->boolean(80),
         ];
     }
 }

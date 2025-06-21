@@ -13,11 +13,11 @@ class Vhost extends Model
 
     protected $fillable = [
         'domain',
-        'status',
+        'active',
     ];
 
     protected $casts = [
-        'status' => 'boolean',
+        'active' => 'boolean',
     ];
 
     // Get vmails for this domain (computed relationship)
@@ -37,11 +37,11 @@ class Vhost extends Model
 
     public function scopeActive($query)
     {
-        return $query->where('status', true);
+        return $query->where('active', true);
     }
 
     public function scopeInactive($query)
     {
-        return $query->where('status', false);
+        return $query->where('active', false);
     }
 }
