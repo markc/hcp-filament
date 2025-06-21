@@ -22,7 +22,7 @@ jobs:
         coverage: none
 
     - name: Cache composer dependencies
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: vendor
         key: composer-${{ hashFiles('composer.lock') }}
@@ -120,7 +120,7 @@ jobs:
         echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
 
     - name: Cache composer dependencies
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: vendor
         key: composer-${{ runner.os }}-${{ matrix.php }}-${{ hashFiles('composer.lock') }}
@@ -164,7 +164,7 @@ jobs:
         fail_ci_if_error: false
 
     - name: Upload test results to GitHub
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: failure()
       with:
         name: test-results-${{ matrix.php }}-${{ matrix.laravel }}
@@ -174,7 +174,7 @@ jobs:
         retention-days: 3
 
     - name: Upload coverage report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: matrix.php == '8.4' && matrix.laravel == '12.*'
       with:
         name: coverage-report
@@ -269,7 +269,7 @@ jobs:
         extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
 
     - name: Cache composer dependencies
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: vendor
         key: composer-${{ hashFiles('composer.lock') }}
@@ -306,7 +306,7 @@ jobs:
         php artisan route:list | head -5
 
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: build-artifacts
         path: |
